@@ -121,9 +121,13 @@ header p {
 }
 
 /* ---------- MODAL ---------- */
+/* The gradient background lives here — covers the WHOLE modal.
+   Image sits on top and fades into it. Info panel is transparent.
+   JS sets the gradient via style attribute. */
 .modal {
   position: relative;
-  background: transparent;
+  /* Fallback gradient until JS sets one */
+  background: linear-gradient(145deg, rgba(140,90,160,.95), rgba(212,150,167,.95));
   border-radius: 22px;
   overflow: hidden;
   width: 100%;
@@ -131,7 +135,6 @@ header p {
   max-height: 88vh;
   display: flex;
   flex-direction: row;
-  /* Scale-up entrance animation — transform only, no layout cost */
   transform: scale(.94) translateY(16px);
   transition: transform .4s var(--ease);
   box-shadow: 0 32px 80px rgba(0, 0, 0, .35);
@@ -142,48 +145,69 @@ header p {
 }
 
 /* ---------- MODAL IMAGE ---------- */
-/* Image is wider than its column — it bleeds 80px into the info panel */
-/* The mask fades it out on the right so it melts into the frosted panel */
 .modal-img-wrap {
-  flex: 0 0 58%;
+  flex: 0 0 60%;
   position: relative;
-  z-index: 1;
-  /* Allow the image to overflow rightward into the info panel */
-  overflow: visible;
-  /* Clip top/bottom but NOT left/right */
-  clip-path: inset(0 0 0 0);
+  overflow: hidden;
 }
 
-.modal-img-wrap img {
-  /* Wider than its container — bleeds 80px to the right */
-  width: calc(100% + 80px);
+/* Main image — fades right edge into the gradient behind it */
+#modalImg {
+  width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
   display: block;
-  /* Slightly zoomed so there's content to bleed with */
-  transform: scale(1.04);
+  position: relative;
+  z-index: 2;
+  /* Slight zoom so there's content at the edge to fade */
+  transform: scale(1.05);
   transform-origin: center left;
-  /* Fade the right edge to transparent — this is what creates the blend */
   -webkit-mask-image: linear-gradient(
     to right,
-    black 55%,
-    rgba(0,0,0,0.85) 68%,
-    rgba(0,0,0,0.4) 82%,
-    transparent 100%
+    black 42%,
+    rgba(0,0,0,0.75) 62%,
+    rgba(0,0,0,0.2) 80%,
+    transparent 94%
   );
   mask-image: linear-gradient(
     to right,
-    black 55%,
-    rgba(0,0,0,0.85) 68%,
-    rgba(0,0,0,0.4) 82%,
-    transparent 100%
+    black 42%,
+    rgba(0,0,0,0.75) 62%,
+    rgba(0,0,0,0.2) 80%,
+    transparent 94%
   );
 }
 
+/* Blurred duplicate — same image, blurred, clipped to the right transition zone.
+   filter:blur() on a static element is cheap — NOT backdrop-filter. */
+.blur-clip {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* Only show the rightmost portion — the transition zone */
+  clip-path: inset(0 0 0 38%);
+  overflow: hidden;
+}
+
+.blur-inner {
+  width: 100%;
+  height: 100%;
+  /* The actual blur — applied to the inner element to avoid
+     blur leaking outside the clip boundary */
+  filter: blur(22px);
+  /* Scale up a tiny bit so the blur doesn't show a hard edge */
+  transform: scale(1.12);
+}
+
+.blur-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 /* ---------- MODAL INFO PANEL ---------- */
-/* Background is set on the parent .modal by JS — this panel is transparent
-   so the gradient shows through seamlessly behind the faded image */
+/* Transparent — gradient is on .modal itself, shows through here */
 .modal-info {
   flex: 1;
   position: relative;
@@ -281,7 +305,7 @@ header p {
     padding: 2.5rem 1rem 2rem;
   }
 
-  /* Mobile modal — image bleed becomes a bottom fade instead */
+  /* Mobile modal — vertical layout, fade goes downward */
   .modal {
     flex-direction: column;
     max-height: 92vh;
@@ -290,31 +314,36 @@ header p {
 
   .modal-img-wrap {
     flex: 0 0 auto;
-    height: 60vw;
-    overflow: hidden;
-    clip-path: none;
+    height: 58vw;
   }
 
-  .modal-img-wrap img {
-    width: 100%;
-    height: 100%;
-    transform: scale(1.06);
+  /* Flip fade direction to bottom */
+  #modalImg {
+    transform: scale(1.05);
     transform-origin: top center;
-    /* On mobile, fade bottom edge into the panel below */
     -webkit-mask-image: linear-gradient(
       to bottom,
-      black 40%,
-      rgba(0,0,0,0.75) 65%,
-      rgba(0,0,0,0.2) 85%,
-      transparent 100%
+      black 38%,
+      rgba(0,0,0,0.75) 60%,
+      rgba(0,0,0,0.2) 80%,
+      transparent 96%
     );
     mask-image: linear-gradient(
       to bottom,
-      black 40%,
-      rgba(0,0,0,0.75) 65%,
-      rgba(0,0,0,0.2) 85%,
-      transparent 100%
+      black 38%,
+      rgba(0,0,0,0.75) 60%,
+      rgba(0,0,0,0.2) 80%,
+      transparent 96%
     );
+  }
+
+  /* Flip blur layer to bottom */
+  .blur-clip {
+    clip-path: inset(38% 0 0 0);
+  }
+
+  .blur-inner {
+    transform: scale(1.12);
   }
 
   .modal-info {
@@ -348,5 +377,5 @@ header p {
     grid-template-columns: 1fr 1fr;
     gap: .6rem;
   }
-                                }
-                   
+   }
+   
