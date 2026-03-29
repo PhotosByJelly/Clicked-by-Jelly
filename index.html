@@ -285,7 +285,15 @@
     <div class="modal" id="modal">
       <button class="close-btn" id="closeBtn" aria-label="Close">×</button>
       <div class="modal-img-wrap">
+        <!-- Main image -->
         <img src="" id="modalImg" alt="">
+        <!-- Blurred duplicate — clipped to the transition zone only.
+             filter:blur() on a static element = cheap, not backdrop-filter -->
+        <div class="blur-clip">
+          <div class="blur-inner">
+            <img src="" id="modalImgBlur" alt="">
+          </div>
+        </div>
       </div>
       <div class="modal-info" id="modalInfo">
         <h2 id="modalTitle"></h2>
@@ -300,4 +308,5 @@
 
   <script src="script.js"></script>
 </body>
-</html>
+  </html>
+  
