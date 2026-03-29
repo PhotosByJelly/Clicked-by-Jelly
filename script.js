@@ -27,8 +27,10 @@ document.querySelectorAll(".photo-card").forEach(card => {
     modalMeta.textContent  = meta;
     modalDownload.href     = download;
 
-    // Set the info panel gradient using the card's own colours
-    modalInfo.style.background = `linear-gradient(145deg, ${g1}, ${g2})`;
+    // Lower opacity so the backdrop-filter blur shows the bled image through
+    const g1semi = g1.replace(/[\d.]+\)$/, '.72)');
+    const g2semi = g2.replace(/[\d.]+\)$/, '.72)');
+    modalInfo.style.background = `linear-gradient(145deg, ${g1semi}, ${g2semi})`;
 
     // Show the modal
     overlay.classList.add("active");
