@@ -1,0 +1,296 @@
+/* =============================================
+   style.css — Behind the Lens by Jelly
+   ============================================= */
+
+/* ---------- VARIABLES ---------- */
+:root {
+  --bg: #fdf6f0;
+  --text: #2e2e2e;
+  --muted: #999;
+  --pink: #d496a7;
+  --radius: 18px;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+/* ---------- RESET ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- BASE ---------- */
+body {
+  font-family: "DM Sans", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- HEADER ---------- */
+header {
+  text-align: center;
+  padding: 4rem 1.5rem 3rem;
+}
+
+header h1 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(2.2rem, 6vw, 3.2rem);
+  font-weight: 600;
+  color: var(--pink);
+  letter-spacing: -.01em;
+}
+
+header p {
+  margin-top: .6rem;
+  color: var(--muted);
+  font-weight: 300;
+  font-size: 1rem;
+  letter-spacing: .02em;
+}
+
+/* ---------- GALLERY ---------- */
+.gallery {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 4rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ---------- PHOTO CARD ---------- */
+.photo-card {
+  position: relative;
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .07);
+  /* Use transform for animation — GPU accelerated, no layout shift */
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+}
+
+.photo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .13);
+}
+
+.photo-card img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+  /* Prevents layout jump while image loads */
+  background: #f0e8e0;
+}
+
+/* ---------- CARD LABEL ---------- */
+.card-label {
+  padding: .7rem 1rem;
+  font-size: .82rem;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: .01em;
+}
+
+/* ---------- MODAL OVERLAY ---------- */
+/* Simple dark overlay — NO backdrop-filter, works on all devices */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 15, 10, .78);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  /* Hidden by default using opacity + pointer-events */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---------- MODAL ---------- */
+.modal {
+  position: relative;
+  background: white;
+  border-radius: 22px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 980px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: row;
+  /* Scale-up entrance animation — transform only, no layout cost */
+  transform: scale(.94) translateY(16px);
+  transition: transform .4s var(--ease);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, .35);
+}
+
+.modal-overlay.active .modal {
+  transform: scale(1) translateY(0);
+}
+
+/* ---------- MODAL IMAGE ---------- */
+.modal-img-wrap {
+  flex: 0 0 58%;
+  overflow: hidden;
+}
+
+.modal-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- MODAL INFO PANEL ---------- */
+/* Gradient is set dynamically by JS using data attributes */
+.modal-info {
+  flex: 1;
+  padding: 2.5rem 2.2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: white;
+  overflow-y: auto;
+}
+
+.modal-info h2 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(1.3rem, 2.5vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.modal-info .mood {
+  font-style: italic;
+  font-weight: 300;
+  opacity: .92;
+  line-height: 1.6;
+  font-size: .97rem;
+  margin-bottom: 1.2rem;
+}
+
+.modal-info .meta {
+  font-size: .78rem;
+  opacity: .7;
+  letter-spacing: .03em;
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+/* ---------- DOWNLOAD BUTTON ---------- */
+.download-btn {
+  align-self: flex-start;
+  padding: .65rem 1.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .88);
+  color: #1a1a1a;
+  text-decoration: none;
+  font-size: .85rem;
+  font-weight: 500;
+  letter-spacing: .02em;
+  /* Transform only — no layout recalc */
+  transition: transform .3s var(--ease), background .2s ease;
+}
+
+.download-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 1);
+}
+
+/* ---------- CLOSE BUTTON ---------- */
+.close-btn {
+  position: absolute;
+  top: .9rem;
+  right: .9rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .28);
+  border: none;
+  color: white;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s ease, transform .2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, .5);
+  transform: scale(1.1);
+}
+
+/* ---------- MOBILE ---------- */
+/* Stack vertically on small screens. No desktop mode needed. */
+@media (max-width: 680px) {
+  .gallery {
+    grid-template-columns: repeat(2, 1fr);
+    gap: .75rem;
+    padding: .75rem .75rem 3rem;
+  }
+
+  header {
+    padding: 2.5rem 1rem 2rem;
+  }
+
+  /* Modal becomes a vertical card */
+  .modal {
+    flex-direction: column;
+    max-height: 92vh;
+    border-radius: 18px;
+  }
+
+  .modal-img-wrap {
+    flex: 0 0 auto;
+    height: 52vw;
+  }
+
+  .modal-info {
+    padding: 1.4rem 1.3rem 1.6rem;
+    justify-content: flex-start;
+  }
+
+  .modal-info h2 {
+    font-size: 1.2rem;
+    margin-bottom: .6rem;
+  }
+
+  .modal-info .mood {
+    font-size: .9rem;
+    margin-bottom: .8rem;
+  }
+
+  .modal-info .meta {
+    margin-bottom: 1.2rem;
+  }
+
+  .card-label {
+    font-size: .75rem;
+    padding: .5rem .7rem;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .gallery {
+    grid-template-columns: 1fr 1fr;
+    gap: .6rem;
+  }
+}
