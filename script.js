@@ -27,10 +27,12 @@ document.querySelectorAll(".photo-card").forEach(card => {
     modalMeta.textContent  = meta;
     modalDownload.href     = download;
 
-    // Set panel gradient at .82 alpha — lets the faded image edge bleed through
-    const g1semi = g1.replace(/[\d.]+\)$/, '.82)');
-    const g2semi = g2.replace(/[\d.]+\)$/, '.82)');
-    modalInfo.style.background = `linear-gradient(145deg, ${g1semi}, ${g2semi})`;
+    // Gradient goes on the whole modal — so when the image fades to transparent
+    // it reveals this same gradient underneath, not white
+    const g1full = g1.replace(/[\d.]+\)$/, '1)');
+    const g2full = g2.replace(/[\d.]+\)$/, '1)');
+    modal.style.background = `linear-gradient(145deg, ${g1full}, ${g2full})`;
+    modalInfo.style.background = 'transparent';
 
     // Show the modal
     overlay.classList.add("active");
@@ -64,4 +66,4 @@ overlay.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeModal();
 });
-      
+  
