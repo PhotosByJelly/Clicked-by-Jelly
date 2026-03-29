@@ -142,28 +142,62 @@ header p {
 }
 
 /* ---------- MODAL IMAGE ---------- */
+/* Image is wider than its column — it bleeds 80px into the info panel */
+/* The mask fades it out on the right so it melts into the frosted panel */
 .modal-img-wrap {
   flex: 0 0 58%;
-  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  /* Allow the image to overflow rightward into the info panel */
+  overflow: visible;
+  /* Clip top/bottom but NOT left/right */
+  clip-path: inset(0 0 0 0);
 }
 
 .modal-img-wrap img {
-  width: 100%;
+  /* Wider than its container — bleeds 80px to the right */
+  width: calc(100% + 80px);
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
+  /* Slightly zoomed so there's content to bleed with */
+  transform: scale(1.04);
+  transform-origin: center left;
+  /* Fade the right edge to transparent — this is what creates the blend */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    black 55%,
+    rgba(0,0,0,0.85) 68%,
+    rgba(0,0,0,0.4) 82%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    black 55%,
+    rgba(0,0,0,0.85) 68%,
+    rgba(0,0,0,0.4) 82%,
+    transparent 100%
+  );
 }
 
 /* ---------- MODAL INFO PANEL ---------- */
-/* Gradient is set dynamically by JS using data attributes */
+/* Sits on top of the bled image, frosted glass blurs what's behind it */
 .modal-info {
   flex: 1;
+  position: relative;
+  z-index: 2;
   padding: 2.5rem 2.2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   color: white;
   overflow-y: auto;
+  /* Frosted glass — blurs the image bleeding behind it */
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  /* Semi-transparent gradient set by JS — lets blur show through */
+  background: linear-gradient(145deg, var(--panel-g1, rgba(140,90,160,.75)), var(--panel-g2, rgba(212,150,167,.75)));
 }
 
 .modal-info h2 {
@@ -250,7 +284,7 @@ header p {
     padding: 2.5rem 1rem 2rem;
   }
 
-  /* Modal becomes a vertical card */
+  /* Mobile modal — image bleed becomes a bottom fade instead */
   .modal {
     flex-direction: column;
     max-height: 92vh;
@@ -260,6 +294,27 @@ header p {
   .modal-img-wrap {
     flex: 0 0 auto;
     height: 52vw;
+    overflow: hidden;
+    clip-path: none;
+  }
+
+  .modal-img-wrap img {
+    width: 100%;
+    height: 100%;
+    transform: none;
+    /* On mobile, fade bottom edge into the panel below */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 50%,
+      rgba(0,0,0,0.7) 75%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      black 50%,
+      rgba(0,0,0,0.7) 75%,
+      transparent 100%
+    );
   }
 
   .modal-info {
