@@ -27,9 +27,9 @@ document.querySelectorAll(".photo-card").forEach(card => {
     modalMeta.textContent  = meta;
     modalDownload.href     = download;
 
-    // Lower opacity so the backdrop-filter blur shows the bled image through
-    const g1semi = g1.replace(/[\d.]+\)$/, '.72)');
-    const g2semi = g2.replace(/[\d.]+\)$/, '.72)');
+    // Set panel gradient at .82 alpha — lets the faded image edge bleed through
+    const g1semi = g1.replace(/[\d.]+\)$/, '.82)');
+    const g2semi = g2.replace(/[\d.]+\)$/, '.82)');
     modalInfo.style.background = `linear-gradient(145deg, ${g1semi}, ${g2semi})`;
 
     // Show the modal
@@ -64,3 +64,4 @@ overlay.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeModal();
 });
+      
