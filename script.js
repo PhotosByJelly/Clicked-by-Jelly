@@ -1,68 +1,87 @@
-// =============================================
-//  script.js — Behind the Lens by Jelly
-// =============================================
+// ============================================================
+//  BEHIND THE LENS — script.js
+//  Handles the card click → morph expand animation
+// ============================================================
 
-const overlay       = document.getElementById("modalOverlay");
-const modal         = document.getElementById("modal");
-const modalImg      = document.getElementById("modalImg");
-const modalImgBlur  = document.getElementById("modalImgBlur");
-const modalTitle    = document.getElementById("modalTitle");
-const modalMood     = document.getElementById("modalMood");
-const modalMeta     = document.getElementById("modalMeta");
-const modalDownload = document.getElementById("modalDownload");
-const modalInfo     = document.getElementById("modalInfo");
-const closeBtn      = document.getElementById("closeBtn");
+const gallery = document.getElementById("gallery");
+const overlay = document.getElementById("overlay");
 
-// ── OPEN MODAL ──────────────────────────────
-document.querySelectorAll(".photo-card").forEach(card => {
-  card.addEventListener("click", () => {
-    const { img, title, mood, meta, download, g1, g2 } = card.dataset;
-
-    // Fill content
-    modalImg.src           = img;
-    modalImg.alt           = title;
-    modalImgBlur.src       = img;   // same image for the blur layer
-    modalTitle.textContent = title;
-    modalMood.textContent  = mood;
-    modalMeta.textContent  = meta;
-    modalDownload.href     = download;
-
-    // Gradient goes on the MODAL itself — covers everything behind the image
-    // so the fade has something to blend into (no white showing through)
-    const g1full = g1.replace(/[\d.]+\)$/, '1)');
-    const g2full = g2.replace(/[\d.]+\)$/, '1)');
-    modal.style.background = `linear-gradient(145deg, ${g1full}, ${g2full})`;
-
-    // Show the modal
-    overlay.classList.add("active");
-
-    // Lock the page scroll while modal is open
-    document.body.style.overflow = "hidden";
-  });
-});
-
-// ── CLOSE MODAL ──────────────────────────────
-function closeModal() {
-  overlay.classList.remove("active");
-  document.body.style.overflow = "";   // Restore scrolling
-
-  // Clear the image src after the fade-out finishes
-  // so there's no flash of old image on next open
-  setTimeout(() => {
-    modalImg.src = "";
-    modalImgBlur.src = "";
-  }, 320);
+// Are we on a small screen?
+function isMobile() {
+  return window.innerWidth <= 700;
 }
 
-// Close button
-closeBtn.addEventListener("click", closeModal);
+document.querySelectorAll(".photo-card").forEach(card => {
+  card.addEventListener("click", () => {
 
-// Click outside the modal card to close
-overlay.addEventListener("click", (e) => {
-  if (e.target === overlay) closeModal();
-});
+    // --- 1. Grab where the thumbnail image is on screen right now ---
+    const img = card.querySelector("img");
+    const r = img.getBoundingClientRect();
 
-// Press Escape to close
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeModal();
+    // --- 2. Dim the gallery (lightweight opacity instead of heavy blur) ---
+    gallery.classList.add("dimmed");
+
+    // --- 3. Build the morph element ---
+    const morph = document.createElement("div");
+    morph.className = "morph";
+
+    // Pass the gradient colours as CSS variables on the element itself
+    // so the .info background can reference them
+    morph.style.setProperty("--g1", card.dataset.g1);
+    morph.style.setProperty("--g2", card.dataset.g2);
+
+    // Start position = exactly where the thumbnail was (so it looks like it grows from there)
+    morph.style.left   = r.left + "px";
+    morph.style.top    = r.top  + "px";
+    morph.style.width  = r.width  + "px";
+    morph.style.height = r.height + "px";
+
+    morph.innerHTML = `
+      <span class="close" title="Close">×</span>
+      <img src="${card.dataset.img}" alt="${card.dataset.title}">
+      <div class="info">
+        <h2>${card.dataset.title}</h2>
+        <p class="mood">${card.dataset.mood}</p>
+        <p class="meta">${card.dataset.meta}</p>
+        <a class="download" href="${card.dataset.download}" target="_blank" rel="noopener">↓ Download</a>
+      </div>
+    `;
+
+    overlay.appendChild(morph);
+    overlay.classList.add("active");
+
+    // --- 4. Animate to final position on next frame ---
+    //    (requestAnimationFrame lets the browser paint the start position first,
+    //     then the transition kicks in — that's what makes it feel smooth)
+    requestAnimationFrame(() => {
+      if (isMobile()) {
+        // On mobile: nearly full screen, centred, taller to fit stacked layout
+        morph.style.left   = "3vw";
+        morph.style.top    = "5vh";
+        morph.style.width  = "94vw";
+        morph.style.height = "90vh";
+      } else {
+        // On desktop: wide panel with image + info side by side
+        morph.style.left   = "6vw";
+        morph.style.top    = "10vh";
+        morph.style.width  = "88vw";
+        morph.style.height = "80vh";
+      }
+    });
+
+    // --- 5. Close button ---
+    morph.querySelector(".close").addEventListener("click", closemorph);
+
+    // --- 6. Also close if user taps the dimmed gallery behind ---
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closemorph();
+    }, { once: true });
+
+    function closemorph() {
+      morph.remove();
+      overlay.classList.remove("active");
+      gallery.classList.remove("dimmed");
+    }
+
+  });
 });
