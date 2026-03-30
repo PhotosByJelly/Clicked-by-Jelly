@@ -124,11 +124,13 @@ header p {
     0 40px 120px rgba(0, 0, 0, .25),
     0 0 60px rgba(0, 0, 0, .15);
 
+  /*
+    PERFORMANCE FIX:
+    Only animate transform and border-radius — both are GPU-handled.
+    No left/top/width/height transitions = no layout reflow every frame.
+  */
   transition:
-    left .9s var(--ease),
-    top .9s var(--ease),
-    width .9s var(--ease),
-    height .9s var(--ease),
+    transform .9s var(--ease),
     border-radius .9s var(--ease);
 }
 
@@ -255,3 +257,4 @@ header p {
     font-size: 1.3rem;
   }
    }
+     
