@@ -1,15 +1,5 @@
 // ============================================================
 //  BEHIND THE LENS — script.js
-//  Uses the FLIP technique for GPU-accelerated animation:
-//
-//  F = First   — measure where the thumbnail is
-//  L = Last    — place the morph at its final full size
-//  I = Invert  — use transform to make it LOOK like the thumbnail
-//  P = Play    — remove the transform so it animates to full size
-//
-//  Why this works: the morph is always full-sized underneath.
-//  The GPU just scales/moves it like a flat image.
-//  No width/height changes = no layout reflow = buttery smooth.
 // ============================================================
 
 const gallery = document.getElementById("gallery");
@@ -22,35 +12,39 @@ function isMobile() {
 document.querySelectorAll(".photo-card").forEach(card => {
   card.addEventListener("click", () => {
 
-    // ---- F: FIRST — where is the thumbnail right now? ----
+    // ---- F: FIRST — measure the thumbnail's position ----
     const thumb = card.querySelector("img");
     const thumbRect = thumb.getBoundingClientRect();
 
-    // ---- Dim the gallery ----
     gallery.classList.add("dimmed");
 
-    // ---- Build the morph at its FINAL size and position ----
+    // ---- Build morph at final size ----
     const morph = document.createElement("div");
     morph.className = "morph";
     morph.style.setProperty("--g1", card.dataset.g1);
     morph.style.setProperty("--g2", card.dataset.g2);
 
-    const ml = isMobile() ? "3vw"  : "6vw";
-    const mt = isMobile() ? "5vh"  : "10vh";
-    const mw = isMobile() ? "94vw" : "88vw";
-    const mh = isMobile() ? "90vh" : "80vh";
+    // Final position values
+    // Mobile: compact card, not full screen — centred with breathing room
+    const ml = isMobile() ? "5vw"  : "6vw";
+    const mt = isMobile() ? "12vh" : "10vh";
+    const mw = isMobile() ? "90vw" : "88vw";
+    const mh = isMobile() ? "76vh" : "80vh";
 
-    morph.style.left   = ml;
-    morph.style.top    = mt;
-    morph.style.width  = mw;
-    morph.style.height = mh;
-
-    // No transition yet — need to measure it first
+    morph.style.left       = ml;
+    morph.style.top        = mt;
+    morph.style.width      = mw;
+    morph.style.height     = mh;
     morph.style.transition = "none";
 
+    // img-wrap wraps the photo + the fade overlay
+    // The fade div fades the bottom of the photo into the panel colour
     morph.innerHTML = `
       <span class="close" title="Close">×</span>
-      <img src="${card.dataset.img}" alt="${card.dataset.title}">
+      <div class="img-wrap">
+        <img src="${card.dataset.img}" alt="${card.dataset.title}">
+        <div class="img-fade"></div>
+      </div>
       <div class="info">
         <h2>${card.dataset.title}</h2>
         <p class="mood">${card.dataset.mood}</p>
@@ -62,10 +56,10 @@ document.querySelectorAll(".photo-card").forEach(card => {
     overlay.appendChild(morph);
     overlay.classList.add("active");
 
-    // ---- L: LAST — measure where the morph landed at full size ----
+    // ---- L: LAST — measure morph at full size ----
     const morphRect = morph.getBoundingClientRect();
 
-    // ---- I: INVERT — transform so it looks like the thumbnail ----
+    // ---- I: INVERT — transform to look like the thumbnail ----
     const scaleX = thumbRect.width  / morphRect.width;
     const scaleY = thumbRect.height / morphRect.height;
 
@@ -81,7 +75,7 @@ document.querySelectorAll(".photo-card").forEach(card => {
     morph.style.transformOrigin = "center center";
     morph.style.borderRadius    = "22px";
 
-    // ---- P: PLAY — next frame, animate to full size ----
+    // ---- P: PLAY — animate to full size ----
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         morph.style.transition   = "transform .9s cubic-bezier(.22,1,.36,1), border-radius .9s cubic-bezier(.22,1,.36,1)";
@@ -90,7 +84,7 @@ document.querySelectorAll(".photo-card").forEach(card => {
       });
     });
 
-    // ---- CLOSE ----
+    // ---- CLOSE — animate back to thumbnail ----
     function closemorph() {
       morph.style.transition   = "transform .7s cubic-bezier(.22,1,.36,1), border-radius .6s cubic-bezier(.22,1,.36,1)";
       morph.style.transform    = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
@@ -104,11 +98,9 @@ document.querySelectorAll(".photo-card").forEach(card => {
     }
 
     morph.querySelector(".close").addEventListener("click", closemorph);
-
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) closemorph();
     }, { once: true });
 
   });
 });
-    
