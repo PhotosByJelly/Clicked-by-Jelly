@@ -104,3 +104,4 @@ document.querySelectorAll(".photo-card").forEach(card => {
 
   });
 });
+      
