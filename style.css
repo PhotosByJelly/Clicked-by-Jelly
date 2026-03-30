@@ -53,18 +53,11 @@ header p {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
-
-  /* 
-    PERFORMANCE FIX:
-    Old code used filter:blur(18px) on the whole gallery when a card opened.
-    Blurring 20 images at once is very heavy on low-end devices.
-    Replaced with a simple opacity dim — costs almost nothing, looks clean.
-  */
   transition: opacity .5s var(--ease);
 }
 
 .gallery.dimmed {
-  opacity: .18;
+  opacity: .15;
   pointer-events: none;
 }
 
@@ -94,16 +87,26 @@ header p {
 
 /* ============================================================
    OVERLAY CONTAINER
+   Background blur lives here — ONE element, ONE blur.
+   Since the morph is inside this overlay, it renders on top
+   crisp and unaffected. The gallery behind gets blurred.
+   This is way cheaper than blurring 20 gallery images.
    ============================================================ */
 .overlay {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 10;
+  /* Smooth fade-in for the background tint */
+  background: transparent;
+  transition: background .5s var(--ease);
 }
 
 .overlay.active {
   pointer-events: auto;
+  background: rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 /* ============================================================
@@ -114,43 +117,62 @@ header p {
   border-radius: 28px;
   overflow: hidden;
   display: flex;
-
-  /*
-    On desktop: image on the left, info panel on the right, side by side.
-    On mobile:  stacked vertically (image on top, info below).
-  */
-
   box-shadow:
-    0 40px 120px rgba(0, 0, 0, .25),
+    0 40px 120px rgba(0, 0, 0, .3),
     0 0 60px rgba(0, 0, 0, .15);
-
-  /*
-    PERFORMANCE FIX:
-    Only animate transform and border-radius — both are GPU-handled.
-    No left/top/width/height transitions = no layout reflow every frame.
-  */
   transition:
     transform .9s var(--ease),
     border-radius .9s var(--ease);
 }
 
 /* ============================================================
-   IMAGE INSIDE MORPH
+   IMAGE WRAPPER
+   Wraps the photo + the fade overlay on top of it.
+   position:relative lets the fade overlay be positioned
+   inside it. overflow:hidden clips the fade cleanly.
    ============================================================ */
-.morph > img {
-  /*
-    On desktop this takes 62% of the width.
-    On mobile it becomes 100% width, fixed height.
-  */
+.img-wrap {
+  position: relative;
   width: 62%;
   height: 100%;
-  object-fit: cover;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.img-wrap > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
 /* ============================================================
+   IMAGE FADE — the Eiffel Tower effect
+   A gradient div sits on top of the photo at the bottom.
+   It fades from transparent to the panel's gradient colour,
+   so the photo melts into the info panel seamlessly.
+   pointer-events:none so clicks go through to the image.
+   ============================================================ */
+.img-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 55%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--g1) 100%
+  );
+  pointer-events: none;
+}
+
+/* ============================================================
    INFO PANEL
+   Backdrop blur brought back — safe now because:
+   - Animation uses transform (GPU), not width/height (CPU)
+   - The blur only runs while panel is open & static, not during animation
+   - It's one small panel, not 20 images
    ============================================================ */
 .info {
   flex: 1;
@@ -159,14 +181,8 @@ header p {
   flex-direction: column;
   justify-content: center;
   color: white;
-
-  /*
-    PERFORMANCE FIX:
-    Old code used backdrop-filter:blur(35px) here.
-    That forces the GPU to blur everything behind the panel in real time.
-    On budget phones this alone can drop to slideshow FPS.
-    Replaced with a solid gradient — looks just as rich, costs nothing.
-  */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   background: linear-gradient(135deg, var(--g1), var(--g2));
 }
 
@@ -230,31 +246,46 @@ header p {
 }
 
 /* ============================================================
-   MOBILE — proper fix this time
+   MOBILE
+   Compact card — not full screen.
+   Image on top (fixed height), info panel below, scrollable.
+   The fade overlaps from the image bottom into the info colour.
    ============================================================ */
 @media (max-width: 700px) {
 
-  /* Stack the morph vertically on small screens */
   .morph {
     flex-direction: column;
     overflow-y: auto;
   }
 
-  /* Image takes full width, fixed height at top */
-  .morph > img {
+  /* Compact image — just enough to see the photo */
+  .img-wrap {
     width: 100%;
-    height: 52vw;
-    min-height: 200px;
+    height: 56vw;
+    min-height: 190px;
+    flex-shrink: 0;
   }
 
-  /* Info panel fills the rest naturally */
+  /* Fade is more dramatic on mobile since it flows into the panel below */
+  .img-fade {
+    height: 65%;
+  }
+
   .info {
     width: 100%;
-    padding: 1.6rem;
+    padding: 1.4rem 1.6rem 1.8rem;
   }
 
   .info h2 {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
   }
-   }
-     
+
+  .info .mood {
+    margin: .6rem 0;
+    font-size: .95rem;
+  }
+
+  .download {
+    margin-top: 1.2rem;
+  }
+}
